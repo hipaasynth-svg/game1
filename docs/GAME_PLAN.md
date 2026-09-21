@@ -196,4 +196,25 @@ processor, regulator, or player disputes a balance.
    tested) — this is what both the server's spin resolution and the offline
    RTP simulator will run against, so it needs to exist before either does.
 4. Build the Phase 1 spin loop end-to-end (server CSPRNG → win evaluation
-   → ledger → client render/animation) as the first playable slice.
+   → ledger → client render/animation) as the first playable slice. Server
+   side (`packages/server`) is now up: Fastify + Postgres, real
+   double-entry ledger, player create/balance/spin endpoints. What's still
+   missing before this is a real playable slice: the frontend (no renderer
+   yet), and real GC purchase (players get a welcome-bonus grant instead of
+   Stripe for now — deliberately out of scope until asked for, since it
+   needs a Stripe account this session doesn't have credentials for).
+
+## 7. Local development
+
+- Postgres: `DATABASE_URL=postgresql://user:pass@localhost:5432/game1`
+  (a separate `game1_test` / `TEST_DATABASE_URL` database for tests, so
+  test runs never touch dev data).
+- `npm run build` (root) builds both packages — build `@game1/game-engine`
+  before `@game1/server`, since the server imports its compiled output.
+- `npm run migrate -w @game1/server` applies `packages/server/migrations/`
+  (plain numbered SQL files, tracked in a `_migrations` table — no ORM).
+- `npm run dev -w @game1/server` runs the server; `npm run test -w
+  @game1/server` runs its integration tests against `TEST_DATABASE_URL` —
+  these hit real Postgres deliberately (see spin.test.ts's concurrency
+  test), not a mock, since the thing actually worth testing here is
+  transaction/locking behavior a mock can't catch.

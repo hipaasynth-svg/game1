@@ -1,0 +1,25 @@
+{
+  "name": "@game1/server",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "main": "dist/server.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsx src/server.ts",
+    "migrate": "tsx src/migrate.ts",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@game1/game-engine": "*",
+    "fastify": "^5.1.0",
+    "pg": "^8.13.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "@types/pg": "^8.11.10",
+    "typescript": "^5.6.3",
+    "vitest": "^5.0.1",
+    "tsx": "^4.19.2"
+  }
+}
