@@ -52,6 +52,8 @@ describe('resolveSpin', () => {
     cascadeMultiplierSchedule: [1],
     freeSpinsTriggerCount: 99,
     freeSpinsAwarded: 0,
+    freeSpinsRetriggerCount: 99,
+    freeSpinsRetriggerAwarded: 0,
     wheelSegments: [],
   };
 

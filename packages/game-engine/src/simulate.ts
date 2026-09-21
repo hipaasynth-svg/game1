@@ -1,6 +1,5 @@
 import { secureRandomInt } from './rng.js';
-import { generateGrid } from './grid.js';
-import { resolveSpin } from './tumble.js';
+import { playRound } from './round.js';
 import { defaultGameConfig } from './config.js';
 import type { GameConfig } from './config.js';
 
@@ -12,10 +11,10 @@ export interface SimulationResult {
   freeSpinsTriggered: number;
 }
 
-// Base-game RTP only — the free-spins round and wheel-multiplier finale
-// aren't wired into resolveSpin yet (see wheel.ts), so this understates
-// true RTP until that's simulated too. Don't treat this number as the
-// real RTP target check until free spins are included.
+// Full-round RTP: base spin plus, when triggered, the free-spins round and
+// its wheel-multiplier finale. This is the number to check against the 91%
+// target in docs/GAME_PLAN.md — tune symbolWeights/paytable/schedule/
+// wheelSegments in config.ts and re-run until it converges there.
 export function runSimulation(
   spins: number,
   betPerSpin = 1,
@@ -25,10 +24,9 @@ export function runSimulation(
   let freeSpinsTriggered = 0;
 
   for (let i = 0; i < spins; i += 1) {
-    const grid = generateGrid(config.rows, config.cols, config.symbolWeights, secureRandomInt);
-    const result = resolveSpin(grid, config, secureRandomInt);
-    totalWon += result.totalWinMultiplier * betPerSpin;
-    if (result.freeSpinsTriggered) freeSpinsTriggered += 1;
+    const round = playRound(config, secureRandomInt);
+    totalWon += round.totalWinMultiplier * betPerSpin;
+    if (round.freeSpins) freeSpinsTriggered += 1;
   }
 
   const totalWagered = spins * betPerSpin;

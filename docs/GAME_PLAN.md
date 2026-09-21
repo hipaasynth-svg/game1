@@ -118,12 +118,17 @@ is far more expensive than sequencing it up front.
 - Placeholder-quality art/animation is fine for v1; a real art and motion
   pass comes after the win-evaluation loop and win/phantom-spider effects
   are proven fun, not before.
-- **RTP target: 95%**, provisional pending the Monte Carlo simulator (an
-  explicit, stated number to design and build against beats leaving it
-  open — cluster-pay + tumble + wheel-multiplier math is meaningfully more
-  complex to simulate than a flat payline game, so budget real time for a
-  standalone simulator that runs against the same win-evaluation code the
-  server uses before trusting any RTP number in production).
+- **RTP target: 91%**, now tuned against the actual Monte Carlo simulator
+  (`npm run simulate -w @game1/game-engine`) rather than just asserted — the
+  paytable is unchanged from the initial placeholder pass, and the wheel's
+  tail segments (23x/52x) were adjusted down to bring full-round RTP (base
+  + free spins + wheel) from an initial simulated ~114% to land near this
+  target. This is a first hand-tuned pass, not a rigorous actuarial
+  balancing exercise — treat the config as "roughly right, engineering-
+  usable" rather than launch-ready; a real balancing pass (proper symbol/
+  tier-by-tier contribution analysis, wider simulation runs, review by
+  someone who does this for a living) still belongs before real money is
+  on the line.
 - One game in v1, not a lobby of games — a multi-game lobby is a scale
   decision for later, not an MVP requirement.
 
