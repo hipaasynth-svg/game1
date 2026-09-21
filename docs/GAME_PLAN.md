@@ -95,16 +95,35 @@ is far more expensive than sequencing it up front.
   scope to "base game + one bonus round," per the no-second-bonus-mechanic
   goal below. Exact trigger odds and wheel-segment weights get set during
   RTP simulation, not guessed.
-- Original theme (not licensed IP — avoids licensing cost/risk entirely).
-  Placeholder-quality art is fine for v1; art pass comes after the loop is
-  proven fun.
-- Configurable, disclosed theoretical RTP (return-to-player) — pick a target
-  (e.g. 94–96%), and be able to state it. This matters for both player trust
-  and eventual regulatory/processor scrutiny. Cluster-pay + tumble + wheel-
-  multiplier math is meaningfully more complex to simulate than a flat
-  payline game — budget real time for a Monte Carlo simulator (build it as
-  a standalone script against the same win-evaluation code the server
-  uses) before trusting any RTP number.
+- **Theme: spiders, eerie palette** (original IP — no licensing cost/risk).
+  Reading "Erie colors" as *eerie* — a dark, desaturated palette (charcoal/
+  near-black background, muted violet/sickly green/bone-white accents,
+  webbing-silver highlights) rather than a literal Lake Erie teal/blue
+  scheme. Flag this now in case the intent was the lake's colors instead —
+  cheap to redirect before any art gets made, expensive after.
+- **Win effect:** on a win, spiders visually swarm across the board/screen,
+  scaling with win size (a few spiders skittering across for a small win,
+  the screen crawling with them for a big one, full takeover for the
+  wheel-multiplier bonus). Purely presentational — sits in the client's
+  render layer, no effect on math/RTP.
+- **Phantom spider easter egg:** a translucent/ghostly spider that appears
+  during idle moments and animates toward the player's pointer/finger
+  position, tracking touch or cursor movement. Proposed default for v1:
+  **cosmetic only** — an atmosphere/engagement touch with no payout effect,
+  which keeps it out of the RTP model and the legal-disclosure surface
+  entirely. It can be upgraded later into a real bonus trigger (e.g., tap
+  it before it reaches the edge for a small reward), but that would need to
+  be priced into the RTP simulation and disclosed like any other feature —
+  worth doing deliberately in a later pass, not by default now.
+- Placeholder-quality art/animation is fine for v1; a real art and motion
+  pass comes after the win-evaluation loop and win/phantom-spider effects
+  are proven fun, not before.
+- **RTP target: 95%**, provisional pending the Monte Carlo simulator (an
+  explicit, stated number to design and build against beats leaving it
+  open — cluster-pay + tumble + wheel-multiplier math is meaningfully more
+  complex to simulate than a flat payline game, so budget real time for a
+  standalone simulator that runs against the same win-evaluation code the
+  server uses before trusting any RTP number in production).
 - One game in v1, not a lobby of games — a multi-game lobby is a scale
   decision for later, not an MVP requirement.
 
@@ -164,9 +183,7 @@ processor, regulator, or player disputes a balance.
 
 ## 6. Immediate next steps
 
-1. Confirm remaining open scope items: theme, exact RTP target, and the
-   free-spins trigger/wheel-multiplier table (final numbers come from
-   simulation, but need a starting design to simulate against).
+1. Confirm the "eerie" vs. Lake Erie palette reading above.
 2. Scaffold the repo: frontend (Vite + React + PixiJS) and backend
    (Fastify + Postgres) as two packages in this monorepo.
 3. Build the win-evaluation core first and in isolation (cluster detection
