@@ -26,6 +26,10 @@ export interface GameConfig {
   cascadeMultiplierSchedule: number[];
   freeSpinsTriggerCount: number;
   freeSpinsAwarded: number;
+  // A retrigger during the free-spins round needs its own (typically lower)
+  // scatter threshold and award count — see freeSpins.ts.
+  freeSpinsRetriggerCount: number;
+  freeSpinsRetriggerAwarded: number;
   wheelSegments: WheelSegment[];
 }
 
@@ -75,6 +79,8 @@ export const defaultGameConfig: GameConfig = {
   cascadeMultiplierSchedule: [1, 2, 3, 5, 8, 13],
   freeSpinsTriggerCount: 4,
   freeSpinsAwarded: 10,
+  freeSpinsRetriggerCount: 3,
+  freeSpinsRetriggerAwarded: 5,
   wheelSegments: [
     { multiplier: 2, weight: 40 },
     { multiplier: 3, weight: 25 },

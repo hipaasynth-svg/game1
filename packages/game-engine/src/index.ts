@@ -6,4 +6,6 @@ export * from './grid.js';
 export * from './clusters.js';
 export * from './tumble.js';
 export * from './wheel.js';
+export * from './freeSpins.js';
+export * from './round.js';
 export * from './simulate.js';
