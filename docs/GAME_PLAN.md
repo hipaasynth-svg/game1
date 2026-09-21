@@ -50,6 +50,15 @@ bolting them on at the end.
 7. **Responsible-gaming basics are expected by processors and regulators
    even without a gambling license**: 18+/21+ age gate, self-exclusion,
    session/spend limits, links to problem-gambling resources.
+8. **Payout liability from high volatility.** A high-volatility game pays
+   rarely but big — and because SC redeems for real cash, a rare huge hit is
+   a real cash obligation, not just a number on screen. Two standard
+   mitigations, both needed before SC/redemption go live: a hard **max-win
+   cap** per spin (industry norm is roughly 5,000x–10,000x the stake, tuned
+   during RTP simulation), and a funded **reserve/bankroll policy** sized to
+   cover plausible payout swings — some states expect operators to show they
+   can actually cover redemptions. This is a Phase 0/3 legal + finance item,
+   not something to discover after a big win happens.
 
 **Consequence for sequencing:** build and validate the *game* (is it fun,
 does the server-authoritative economy work, do people come back) on Gold
@@ -60,15 +69,42 @@ is far more expensive than sequencing it up front.
 
 ## 3. Game design (v1 — one game, done well)
 
-- Format: 5×3 reels, 20–25 paylines (or "ways to win"), standard
-  low/mid/high symbols + wild + scatter, one bonus feature (free spins with
-  a multiplier) — no second bonus mechanic for v1.
+- **Grid & pay mechanic:** 5×5 grid, **cluster pays** — a win is 5+ same
+  symbols connected orthogonally (not diagonally) anywhere on the grid, not
+  fixed paylines. This is the standard pairing for tumbling wins (see
+  Reactoonz/Gemix-style games); "ways/payline" math doesn't fit a tumble
+  mechanic as cleanly since the grid contents change mid-evaluation.
+- **Tumbling (cascading) wins:** on a win, the winning symbols clear, symbols
+  above drop to fill the gaps, new symbols fall in from the top, and the
+  grid re-evaluates for new wins — chaining until a spin produces no more
+  wins. Each step in the chain is a "step multiplier" opportunity (see
+  below).
+- **Volatility: high.** Concretely this means the paytable is weighted
+  toward rare, large clusters and rare big multipliers rather than frequent
+  small wins — target base-game hit frequency in the ~20–25% range (vs.
+  ~30–40% for a medium-volatility game). This is tuned by Monte Carlo
+  simulation against the paytable and multiplier tables, not by the RNG —
+  see the max-win cap in the pitfalls section above, which volatility work
+  must respect.
+- **Multiplier spinner (bonus feature):** a wheel-style bonus that sets a
+  multiplier applied to a round's winnings. Proposed default: 3+ scatter
+  symbols trigger a free-spins round; each tumble step during free spins
+  adds to a multiplier meter, and at the end of the round a wheel spin
+  determines a final multiplier (e.g. weighted across 2x–100x) applied to
+  the round's total win. This is one bonus mechanic, not two — keeps v1
+  scope to "base game + one bonus round," per the no-second-bonus-mechanic
+  goal below. Exact trigger odds and wheel-segment weights get set during
+  RTP simulation, not guessed.
 - Original theme (not licensed IP — avoids licensing cost/risk entirely).
   Placeholder-quality art is fine for v1; art pass comes after the loop is
   proven fun.
 - Configurable, disclosed theoretical RTP (return-to-player) — pick a target
   (e.g. 94–96%), and be able to state it. This matters for both player trust
-  and eventual regulatory/processor scrutiny.
+  and eventual regulatory/processor scrutiny. Cluster-pay + tumble + wheel-
+  multiplier math is meaningfully more complex to simulate than a flat
+  payline game — budget real time for a Monte Carlo simulator (build it as
+  a standalone script against the same win-evaluation code the server
+  uses) before trusting any RTP number.
 - One game in v1, not a lobby of games — a multi-game lobby is a scale
   decision for later, not an MVP requirement.
 
@@ -87,8 +123,29 @@ processor, regulator, or player disputes a balance.
   PixiJS renders in a `<canvas>`, so the same build works as an installable
   PWA on mobile browsers without needing a native app-store build.
 - **Backend:** Node.js + TypeScript (Fastify), Postgres for accounts and the
-  ledger, Redis for sessions/rate-limiting. Server-side RNG via Node's
-  `crypto` (cryptographically secure), never `Math.random`.
+  ledger, Redis for sessions/rate-limiting.
+- **RNG — CSPRNG, not quantum, for v1:** every certified online casino
+  (regulators/testing labs like GLI, iTech Labs, BMM) runs on a
+  cryptographically secure PRNG (Node's `crypto.randomInt`, never
+  `Math.random`), and that's what's actually certified and trusted, not the
+  physical source of entropy. A CSPRNG is computationally indistinguishable
+  from "true" randomness — no regulator or lab asks for quantum-sourced
+  entropy, so it buys no compliance or fairness credibility that a good
+  CSPRNG doesn't already have.
+  Real quantum RNG (entropy from quantum phenomena — ANU's QRNG, ID
+  Quantique hardware) does exist, but calling an external quantum API
+  *per spin* would put a third-party network call and its uptime on the
+  critical path of every spin, and free/public QRNG APIs aren't built for
+  commercial request volume. If "quantum" matters as a real (not just
+  marketing) differentiator later, the right pattern is to periodically
+  feed quantum entropy from a commercial QRNG vendor into the server's
+  CSPRNG entropy pool — the same approach Cloudflare uses with its lava-lamp
+  wall — so you get a genuine quantum contribution without making spin
+  resolution depend on a live external call. That's a Phase 2+/marketing
+  item; v1 ships on a plain server-side CSPRNG. Either way, budget for
+  independent third-party RNG certification (GLI/iTech Labs/BMM) before
+  scaling — that credential, not the entropy source, is what processors,
+  regulators, and skeptical players actually check.
 - **Hosting:** frontend on Vercel; backend + Postgres on Render/Fly.io/Railway
   to start (a VPS/AWS migration is a later-scale problem, not a v1 one).
 - **Payments:** Stripe is fine for GC-only virtual currency sales in Phase 1
@@ -107,8 +164,14 @@ processor, regulator, or player disputes a balance.
 
 ## 6. Immediate next steps
 
-1. Confirm this scope (theme, RTP target, paylines) or redirect it.
+1. Confirm remaining open scope items: theme, exact RTP target, and the
+   free-spins trigger/wheel-multiplier table (final numbers come from
+   simulation, but need a starting design to simulate against).
 2. Scaffold the repo: frontend (Vite + React + PixiJS) and backend
    (Fastify + Postgres) as two packages in this monorepo.
-3. Build the Phase 1 spin loop end-to-end (server RNG → ledger → client
-   render) as the first working slice.
+3. Build the win-evaluation core first and in isolation (cluster detection
+   + tumble/cascade + wheel-multiplier logic, framework-agnostic, unit
+   tested) — this is what both the server's spin resolution and the offline
+   RTP simulator will run against, so it needs to exist before either does.
+4. Build the Phase 1 spin loop end-to-end (server CSPRNG → win evaluation
+   → ledger → client render/animation) as the first playable slice.
