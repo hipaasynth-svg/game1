@@ -33,9 +33,12 @@ export interface GameConfig {
   wheelSegments: WheelSegment[];
 }
 
-// Placeholder v1 numbers, NOT yet balanced against the 95% RTP target in
-// docs/GAME_PLAN.md. Run `npm run simulate -w @game1/game-engine` and tune
-// weights/paytable/schedule before this config is used for real money.
+// v1 numbers, hand-tuned against a Monte Carlo run to land near the 91%
+// RTP target in docs/GAME_PLAN.md (paytable unchanged from the initial
+// placeholder pass; wheelSegments' tail was scaled down to compensate).
+// This is a first pass, not a rigorous balancing exercise — re-run
+// `npm run simulate -w @game1/game-engine` after any change here, and
+// treat this as engineering-usable, not launch-ready for real money.
 export const defaultGameConfig: GameConfig = {
   rows: 5,
   cols: 5,
@@ -85,9 +88,9 @@ export const defaultGameConfig: GameConfig = {
     { multiplier: 2, weight: 40 },
     { multiplier: 3, weight: 25 },
     { multiplier: 5, weight: 15 },
-    { multiplier: 10, weight: 10 },
-    { multiplier: 25, weight: 6 },
-    { multiplier: 50, weight: 3 },
-    { multiplier: 100, weight: 1 },
+    { multiplier: 8, weight: 10 },
+    { multiplier: 14, weight: 6 },
+    { multiplier: 23, weight: 3 },
+    { multiplier: 52, weight: 1 },
   ],
 };

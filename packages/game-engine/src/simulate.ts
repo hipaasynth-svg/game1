@@ -12,7 +12,7 @@ export interface SimulationResult {
 }
 
 // Full-round RTP: base spin plus, when triggered, the free-spins round and
-// its wheel-multiplier finale. This is the number to check against the 95%
+// its wheel-multiplier finale. This is the number to check against the 91%
 // target in docs/GAME_PLAN.md — tune symbolWeights/paytable/schedule/
 // wheelSegments in config.ts and re-run until it converges there.
 export function runSimulation(
